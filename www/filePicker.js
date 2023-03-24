@@ -3,7 +3,7 @@ var exec = require('cordova/exec');
 /**
  * File picker.
  */
-var filePickerPlugin = {
+var filePicker = {
 
     pickFile: function (success, error) {
         cordova.exec(
@@ -14,16 +14,16 @@ var filePickerPlugin = {
             []
         );
     },
-
-   echo: function (success, error) {
-        cordova.exec(
-            success,
-            error,
-            'FilePicker',
-            'echo',
-            []
-        );
-   }
+//
+//   echo: function (success, error) {
+//        cordova.exec(
+//            success,
+//            error,
+//            'FilePicker',
+//            'echo',
+//            []
+//        );
+//   }
    alert: function (success, error) {
         cordova.exec(
             success,
@@ -35,4 +35,4 @@ var filePickerPlugin = {
     }
 
 }
-module.exports = filePickerPlugin;
+module.exports = filePicker;

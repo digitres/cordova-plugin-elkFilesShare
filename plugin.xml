@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        id="cordova-plugin-filepicker" version="1.0.1">
+        id="cordova-plugin-filepicker" version="1.0.0">
 
     <name>FilePicker</name>
     <description>Allows user to pick a file from a device folder of SD card</description>

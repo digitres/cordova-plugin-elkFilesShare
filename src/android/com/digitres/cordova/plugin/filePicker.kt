@@ -1,12 +1,47 @@
 package com.digitres.cordova.plugin
+
+import org.apache.cordova.CordovaPlugin
+import org.apache.cordova.CallbackContext
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+
+
+import android.app.AlertDialog
+import android.app.AlertDialog.Builder
+import android.content.DialogInterface
+import org.apache.cordova.CordovaInterface
+import org.apache.cordova.CordovaWebView
+import org.apache.cordova.PluginResult
+
+import android.content.Context
+
+import android.util.Log
+import android.view.Window
+import android.view.View
+import android.view.WindowManager;
+import android.app.ActionBar
+import androidx.core.content.ContextCompat
+import androidx.core.app.NotificationManagerCompat
+import android.content.ComponentName
+import android.app.ActivityManager
+import android.content.*
+
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import android.provider.OpenableColumns
+import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
+import java.io.File
+
 class FilePicker: CordovaPlugin(){
 
     override fun initialize(cordova: CordovaInterface?, webView: CordovaWebView?) {
         super.initialize(cordova, webView)
-        echo()
-        alert(
-            "test title", "Test alert message","buttonlabel"
-        )
+//        alert(
+//            "test title", "Test alert message","buttonlabel"
+//        )
     }
 
     override fun execute(
@@ -17,15 +52,17 @@ class FilePicker: CordovaPlugin(){
         try {
             //  this.eventsContext = callbackContext
             when (action){
-                "echo" -> {
-                    echo("Echo message ")
-                    return true
-                }
+//                "echo" -> {
+//                    echo("Echo message ")
+//                    return true
+//                }
                 "alert" -> {
                     alert("pick file", "Pick file requested message","buttonlabel")
+                    return true
                 }
                 "pickFile" -> {
-                   pickFile()
+                    pickFile()
+                    return true
                 }
 
                 else ->{
@@ -45,8 +82,10 @@ class FilePicker: CordovaPlugin(){
         folderPickerLauncher.launch(intent)
     }
     private var folderPickerLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            this.cordova.getActivity().registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             try {
+                val appContext = this.cordova.getActivity().getApplicationContext()
+                val destinationFolder = appContext.getFilesDir()
                 val data = result.data
                 val isFileSaved = data?.data?.let { uri ->
                     saveFile(
@@ -65,7 +104,8 @@ class FilePicker: CordovaPlugin(){
         }
 
     private fun saveFile(uri: Uri, directory: File): Boolean {
-        val cursor = contentResolver.query(uri, null, null, null, null)
+        val activity = this.cordova.getActivity()
+        val cursor = activity.contentResolver.query(uri, null, null, null, null)
         cursor?.moveToFirst()
         val fileName =
             cursor?.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
@@ -73,7 +113,7 @@ class FilePicker: CordovaPlugin(){
 
         return if (fileName != null) {
             val file = File(directory, fileName)
-            file.outputStream().use { contentResolver.openInputStream(uri)?.copyTo(it) }
+            file.outputStream().use { activity.contentResolver.openInputStream(uri)?.copyTo(it) }
             true
         } else {
             false
@@ -107,6 +147,4 @@ class FilePicker: CordovaPlugin(){
             .create()
             .show()
     }
-
-
 }
