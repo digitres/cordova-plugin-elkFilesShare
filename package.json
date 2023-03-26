@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/digitres/cordova-plugin-elk-files-share.git"
+    "url": "git+https://github.com/digitres/cordova-plugin-elkFilesShare.git"
   },
   "keywords": [
     "ecosystem:cordova",
@@ -31,7 +31,7 @@
     ]
   },
   "bugs": {
-    "url": "https://github.com/digitres/cordova-plugin-elk-files-share/issues"
+    "url": "https://github.com/digitres/cordova-plugin-elkFilesShare/issues"
   },
-  "homepage": "https://github.com/digitres/cordova-plugin-elk-files-share#readme"
+  "homepage": "https://github.com/digitres/cordova-plugin-elkFilesShare#readme"
 }
