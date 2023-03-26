@@ -1,5 +1,5 @@
 {
-  "name": "cordova-plugin-filepicker",
+  "name": "cordova-plugin-elk-files-share",
   "version": "1.0.0",
   "description": "Allows user to pick a file from a device folder of SD card",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/digitres/cordova-plugin-filepicker.git"
+    "url": "git+https://github.com/digitres/cordova-plugin-elk-files-share.git"
   },
   "keywords": [
     "ecosystem:cordova",
@@ -25,13 +25,13 @@
     }
   },
   "cordova": {
-    "id": "cordova-plugin-filepicker",
+    "id": "cordova-plugin-elk-files-share",
     "platforms": [
       "android"
     ]
   },
   "bugs": {
-    "url": "https://github.com/digitres/cordova-plugin-filepicker/issues"
+    "url": "https://github.com/digitres/cordova-plugin-elk-files-share/issues"
   },
-  "homepage": "https://github.com/digitres/cordova-plugin-filepicker#readme"
+  "homepage": "https://github.com/digitres/cordova-plugin-elk-files-share#readme"
 }
