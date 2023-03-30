@@ -5,36 +5,40 @@
 
     <name>ElkFilesShare</name>
     <description>Allows ELK codorva apps to receive files from other android apps.</description>
-    <keywords>cordova,plugin,file, picker, android</keywords>
+    <keywords>cordova,plugin,file,share, picker, android</keywords>
     <license>MIT</license>
-    <js-module name="ELK File Share Plugin" src="www/elkFilesShare.js">
-        <clobbers target="cordova.plugins.elkFilesShare" />
+    <js-module name="ElkFilesShare" src="www/ElkFilesShare.js">
+        <clobbers target="cordova.plugins.ElkFilesShare" />
     </js-module>
     <engines>
         <engine name="cordova" version=">=10.0.0"/>
         <engine name="cordova-android" version=">=9.0.0"/>
+
     </engines>
 
     <platform name="android">
-        <source-file src="src/android/com/digitres/cordova/plugin/elkFilesShare.kt" target-dir="java/com/digitres/cordova/plugin/"/>
-        <config-file target="config.xml" parent="/*">
+         <config-file target="res/xml/config.xml" parent="/*">
             <preference name="GradlePluginKotlinEnabled" value="true" />
+             <preference name="AndroidPersistentFileLocation" value="Compatibility" />
             <feature name="ElkFilesShare">
-                <param name="android-package" value="com.digitres.cordova.plugin.elkFilesShare"/>
+                <param name="android-package" value="com.digitres.cordova.plugin.ElkFilesShare"/>
                 <param name="onload" value="true" />
             </feature>
         </config-file>
-        <config-file target="AndroidManifest.xml" platform="android" parent="/manifest/application/activity" mode="merge">
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="*/*" />
-            </intent-filter>
-        </config-file>
-        <config-file target="AndroidManifest.xml" parent="/manifest" mode="merge">
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-        </config-file>
+
+        <!--        <config-file target="AndroidManifest.xml" platform="android" parent="/manifest/application/activity" mode="merge">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.SEND" />-->
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+<!--                <data android:mimeType="*/*" />-->
+<!--            </intent-filter>-->
+<!--        </config-file>-->
+<!--        <config-file target="AndroidManifest.xml" parent="/*" mode="merge">-->
+<!--            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />-->
+<!--            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />-->
+<!--            <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>-->
+<!--        </config-file>-->
+        <source-file src="src/android/com/digitres/cordova/plugin/ElkFilesShare.kt" target-dir="app/src/main/kotlin/com/digitres/cordova/plugin/" />
 
     </platform>
 </plugin>

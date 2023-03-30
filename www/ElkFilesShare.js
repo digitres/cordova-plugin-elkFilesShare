@@ -1,7 +1,7 @@
 var exec = require('cordova/exec');
 
 /**
- * File picker.
+ * ELK Files SHare .
  */
 var elkFilesShare = {
 
@@ -11,28 +11,29 @@ var elkFilesShare = {
             error,
             'ElkFilesShare',
             'processFile',
-            [params]
+            params
         );
     },
 
-   echo: function (success, error) {
+    echo: function (message, success, error) {
         cordova.exec(
-            success,
-            error,
+             success,
+             error,
             'ElkFilesShare',
             'echo',
-            []
+            [message]
         );
-   },
-   alert: function (success, error) {
-        cordova.exec(
-            success,
-            error,
-            'ElkFilesShare',
-            'alert',
-            []
-        );
-    }
+     }
+
+//   alert: function (success, error) {
+//        cordova.exec(
+//            success,
+//            error,
+//            'ElkFilesShare',
+//            'alert',
+//            []
+//        );
+//   }
 
 }
 module.exports = elkFilesShare;

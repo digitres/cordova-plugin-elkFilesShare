@@ -1,7 +1,7 @@
 {
   "name": "cordova-plugin-elk-files-share",
   "version": "1.0.0",
-  "description": "Allows user to pick a file from a device folder of SD card",
+  "description": "Allows ELK codorva apps to receive files from other android apps",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
