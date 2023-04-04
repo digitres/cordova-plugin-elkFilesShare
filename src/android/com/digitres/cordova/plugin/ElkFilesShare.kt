@@ -13,10 +13,15 @@ import java.util.zip.ZipInputStream
 import java.io.FileOutputStream
 import java.io.FileInputStream
 
+import android.content.Intent
+
+import android.app.ProgressDialog
+
 
 public class ElkFilesShare: CordovaPlugin(){
 
     private val TAG: String = "ElkFilesShare"
+    private lateinit var progressDialog: ProgressDialog
 
     override fun execute(
         action: String,
@@ -27,6 +32,11 @@ public class ElkFilesShare: CordovaPlugin(){
             Log.d(TAG, "running method: $action")
             when (action){
 
+                "importFile" -> {
+                    startImportActivity()
+                    callbackContext.success("File selection successfully")
+                    return true
+                }
                 "processFile" -> {
                     val obj: JSONObject = args.getJSONObject(0)
                     var targetDirectory: File? = null
@@ -60,21 +70,35 @@ public class ElkFilesShare: CordovaPlugin(){
 
     }
 
+    private fun echo(
+        message: String= "default message",
+        callbackContext: CallbackContext
+    ) {
+        if (message.isNotEmpty()) {
+            callbackContext.success(message)
+        } else {
+            callbackContext.error("Expected one non-empty string argument.")
+        }
+    }
+
+    private fun startImportActivity() {
+        val elkFileManagerPackageName = "org.rff.digitres.elkfilemanager"
+        val intent = Intent("$elkFileManagerPackageName.IMPORT_ACTION")
+        val packageName = this.cordova.getActivity().getPackageName()
+        intent.putExtra("callingPackage", packageName.toString())
+        intent.setPackage(elkFileManagerPackageName)
+        this.cordova.getActivity().startActivity(intent);
+    }
+
     private fun processFile(obj: JSONObject, targetDirectory: File, callbackContext: CallbackContext) {
-        Log.d(TAG, "Inside ProcessFile method")
         try {
             val sourceUri: Uri? = if (obj.has("uri")) Uri.parse(obj.getString("uri")) else null
             if (sourceUri == null) {
                 callbackContext.error("Invalid URI passed")
                 return
             }
-            Log.d(TAG, "Processing: $sourceUri")
-            Log.d(TAG, "Tagert directoty is: $targetDirectory")
-
-            println("Processing: $sourceUri")
-            println("Target folder: $targetDirectory")
-
             val activity = this.cordova.getActivity()
+
             val cursor = activity.contentResolver.query(sourceUri, null, null, null, null)
             cursor?.moveToFirst()
             val fileName =
@@ -120,16 +144,36 @@ public class ElkFilesShare: CordovaPlugin(){
         }
     }
 
-    private fun echo(
-        message: String= "default message",
-        callbackContext: CallbackContext
-    ) {
-        if (message.isNotEmpty()) {
-            callbackContext.success(message)
-        } else {
-            callbackContext.error("Expected one non-empty string argument.")
+    private fun showLoadingDialog(message: String) {
+        try {
+
+            val runnable = Runnable {
+                if (progressDialog.isShowing) {
+                    progressDialog.dismiss()
+                }
+                val appContext = this.cordova.getActivity().applicationContext
+                progressDialog = ProgressDialog(appContext)
+                progressDialog.setTitle("Please wait...")
+                progressDialog.setMessage(message)
+                progressDialog.setCanceledOnTouchOutside(false)
+                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+                progressDialog.show()
+            }
+            cordova.activity.runOnUiThread(runnable)
+
+        } catch (e: Exception) {
+            println("dialog::error::${e.message}")
         }
     }
+
+
+    private fun closeLoadingDialog() {
+        println("closeLoadingDialog")
+        if (::progressDialog.isInitialized) {
+            progressDialog.dismiss()
+        }
+    }
+
 
 //    @kotlin.jvm.Synchronized
 //    fun alert(

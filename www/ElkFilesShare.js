@@ -4,7 +4,15 @@ var exec = require('cordova/exec');
  * ELK Files SHare .
  */
 var elkFilesShare = {
-
+    importFile: function (success, error) {
+        cordova.exec(
+            success,
+            error,
+            'ElkFilesShare',
+            'importFile',
+            []
+        );
+    },
     processFile: function (params, success, error) {
         cordova.exec(
             success,
