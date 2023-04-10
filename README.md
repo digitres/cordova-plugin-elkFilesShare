@@ -13,8 +13,9 @@ Ensure your Cordova app's Manifest include:
 1. Intent-filters
 ```
      <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE" />
-                <category android:name="android.intent.category.DEFAULT" />
+           <action android:name="android.intent.action.SEND_MULTIPLE" />
+           <category android:name="android.intent.category.DEFAULT" />
+           <data android:mimeType="*/*" />
      </intent-filter>
 ```
 2.  PERMISSION
