@@ -16,6 +16,9 @@ import java.io.FileInputStream
 import android.content.Intent
 
 import android.app.ProgressDialog
+import android.content.Context
+import android.os.Build
+import android.os.storage.StorageVolume
 
 
 public class ElkFilesShare: CordovaPlugin(){
@@ -193,51 +196,51 @@ public class ElkFilesShare: CordovaPlugin(){
         }
     }
 
-    private fun getSDCardFolder(appFolder: String): File? {
-        val context = this.cordova.activity.applicationContext
-        val sdcard = context.getExternalFilesDirs(null )[1]
-            .parentFile
-            ?.parentFile
-            ?.parentFile
-            ?.parent
-        val sdcardDocuments = File("${sdcard}/${appFolder}")
-        return if (!sdcardDocuments.listFiles().isNullOrEmpty()) {
-            sdcardDocuments
-        } else null
-    }
-
-    private fun getExternalCardDirectory(): String {
-        val defaultValue = "N/A"
-        val context = this.cordova.getActivity().applicationContext
-        val storageManager = context.getSystemService(Context.STORAGE_SERVICE)
-        try {
-            val storageVolumeClassReflection = Class.forName("android.os.storage.StorageVolume")
-            val getVolumeList = storageManager.javaClass.getMethod("getVolumeList")
-            val getPath = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                storageVolumeClassReflection.getMethod("getDirectory")
-            } else {
-                storageVolumeClassReflection.getMethod("getPath")
-            }
-            val isRemovable = storageVolumeClassReflection.getMethod("isRemovable")
-            val result = getVolumeList.invoke(storageManager) as Array<StorageVolume>
-            result.forEach {
-                if (isRemovable.invoke(it) as Boolean) {
-                    return when(val invokeResult = getPath.invoke(it)) {
-                        is File -> invokeResult.absolutePath
-
-                        is String -> invokeResult
-
-                        else -> defaultValue.also {
-                            Log.d(TAG,"Reflection unsupported type; Invoke result: $invokeResult" )
-                        }
-                    }
-                }
-            }
-        } catch (e: Throwable) {
-            Log.d(TAG,"Could not get SD card path; Exception: $e" )
-        }
-        return defaultValue
-    }
+//    private fun getSDCardFolder(appFolder: String): File? {
+//        val context = this.cordova.activity.applicationContext
+//        val sdcard = context.getExternalFilesDirs(null )[1]
+//            .parentFile
+//            ?.parentFile
+//            ?.parentFile
+//            ?.parent
+//        val sdcardDocuments = File("${sdcard}/${appFolder}")
+//        return if (!sdcardDocuments.listFiles().isNullOrEmpty()) {
+//            sdcardDocuments
+//        } else null
+//    }
+//
+//    private fun getExternalCardDirectory(): String {
+//        val defaultValue = "N/A"
+//        val context = this.cordova.getActivity().applicationContext
+//        val storageManager = context.getSystemService(Context.STORAGE_SERVICE)
+//        try {
+//            val storageVolumeClassReflection = Class.forName("android.os.storage.StorageVolume")
+//            val getVolumeList = storageManager.javaClass.getMethod("getVolumeList")
+//            val getPath = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//                storageVolumeClassReflection.getMethod("getDirectory")
+//            } else {
+//                storageVolumeClassReflection.getMethod("getPath")
+//            }
+//            val isRemovable = storageVolumeClassReflection.getMethod("isRemovable")
+//            val result = getVolumeList.invoke(storageManager) as Array<StorageVolume>
+//            result.forEach {
+//                if (isRemovable.invoke(it) as Boolean) {
+//                    return when(val invokeResult = getPath.invoke(it)) {
+//                        is File -> invokeResult.absolutePath
+//
+//                        is String -> invokeResult
+//
+//                        else -> defaultValue.also {
+//                            Log.d(TAG,"Reflection unsupported type; Invoke result: $invokeResult" )
+//                        }
+//                    }
+//                }
+//            }
+//        } catch (e: Throwable) {
+//            Log.d(TAG,"Could not get SD card path; Exception: $e" )
+//        }
+//        return defaultValue
+//    }
 
 //    @kotlin.jvm.Synchronized
 //    fun alert(
@@ -254,32 +257,5 @@ public class ElkFilesShare: CordovaPlugin(){
 //            }
 //            .create()
 //            .show()
-//    }
-
-    //    private fun pickFile() {
-//        val intent = Intent(Intent.ACTION_GET_CONTENT)
-//        intent.type = "application/zip"
-//        folderPickerLauncher.launch(intent)
-//    }
-//    private var folderPickerLauncher =
-//        this.cordova.getActivity().registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-//        try {
-//            val appContext = this.cordova.getActivity().getApplicationContext()
-//            val destinationFolder = appContext.getFilesDir()
-//            val data = result.data
-//            val isFileSaved = data?.data?.let { uri ->
-//                saveFile(
-//                    uri,
-//                    destinationFolder
-//                )
-//            } ?: kotlin.run { false }
-//            if (isFileSaved) {
-//                println("fileSaved")
-//            } else {
-//                println("fileNoteSaved")
-//            }
-//        } catch (e: Exception) {
-//            println("error getting file uri:: ${e.printStackTrace()}")
-//        }
 //    }
 }
