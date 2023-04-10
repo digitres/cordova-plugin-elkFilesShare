@@ -7,6 +7,7 @@ The plugin has the following dependencies.
 1. https://github.com/darryncampbell/darryncampbell-cordova-plugin-intent
 2. https://github.com/dpa99c/cordova-diagnostic-plugin
 3. https://github.com/dearzhengxy/cordova-plugin-progressdialog
+4. In addition to the above cordova plugins you need to have ELK File Manager installed and ran at least once to ensure user has given it all the permissions it requires.
 
 <b> PERMISSION REQUIREMENTS</b>
 Ensure your Cordova app's Manifest include:
