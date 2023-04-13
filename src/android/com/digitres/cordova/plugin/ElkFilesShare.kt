@@ -148,16 +148,21 @@ public class ElkFilesShare: CordovaPlugin(){
             var entry: ZipEntry?
             while (zis.nextEntry.also { entry = it } != null) {
                 val file = File(targetDirectory, entry!!.name)
-                if (entry!!.isDirectory) {
-                    file.mkdirs()
+                val canonicalPath: String = file.getCanonicalPath()
+                if (!canonicalPath.startsWith(targetDirectory.canonicalPath)) {
+                    throw SecurityException("Unsafe entry in zipped file.")
                 } else {
-                    file.parentFile?.let {
-                        it.mkdirs()
-                        FileOutputStream(file).use { fos ->
-                            val buffer = ByteArray(1024)
-                            var len: Int
-                            while (zis.read(buffer).also { len = it } > 0) {
-                                fos.write(buffer, 0, len)
+                    if (entry!!.isDirectory) {
+                        file.mkdirs()
+                    } else {
+                        file.parentFile?.let {
+                            it.mkdirs()
+                            FileOutputStream(file).use { fos ->
+                                val buffer = ByteArray(1024)
+                                var len: Int
+                                while (zis.read(buffer).also { len = it } > 0) {
+                                    fos.write(buffer, 0, len)
+                                }
                             }
                         }
                     }
