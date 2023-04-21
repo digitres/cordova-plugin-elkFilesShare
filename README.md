@@ -19,14 +19,14 @@ Ensure your Cordova app's Manifest include:
            <data android:mimeType="*/*" />
      </intent-filter>
 ```
-2.  PERMISSION
+2.  Permissions
 ```
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         tools:ignore="ScopedStorage" />
 ```
 
-<b> USAGE</b>
+<b> USAGE</b></br>
 To use the plugin, make calls to the two API functions below:
 
 <b> cordova.plugins.ElkFilesShare.importFile</b> Call this method to start ELK File manager IMPORT_ACTION activity which reads the 2 files from the SDCard and saves them in the temporary folder and sends a file SEND_MULTIPLE intent back to your application. The function requires the full path of the folder containing the files to be copied. The example below uses the diagnostic plugin's function getExternalSdCardDetails() function to get the SDCard location on the device. This is then extended to include the subfolder with the required files.
