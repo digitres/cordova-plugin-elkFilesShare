@@ -9,7 +9,7 @@ The plugin has the following dependencies.
 3. https://github.com/dearzhengxy/cordova-plugin-progressdialog
 4. In addition to the above cordova plugins you need to have <a href="https://play.google.com/store/apps/details?id=org.rff.digitres.elkfilemanager"> ELK File Manager</a> installed and ran at least once to ensure user has given it all the permissions it requires.
 
-<b> PERMISSION REQUIREMENTS</b>
+<b> FILTERS AND PERMISSION REQUIREMENTS</b>
 Ensure your Cordova app's Manifest include:
 1. Intent-filters
 ```
