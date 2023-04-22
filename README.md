@@ -77,7 +77,7 @@ To use the plugin, make calls to the two API functions below:
                     cordova.plugin.progressDialog.init({
                        // theme : 'HOLO_DARK',
                         progressStyle : 'SPINNER',
-                        cancelable : true,
+                        cancelable : false,
                         title : 'Please Wait...',
                         message : 'Copying files to application storage ...',
                     });
