@@ -88,19 +88,37 @@ public class ElkFilesShare: CordovaPlugin(){
         }
     }
 
-    private fun startImportActivity(sourceDirectory: String, callbackContext: CallbackContext) {
+    private fun startImportActivity(folderPath: String, callbackContext: CallbackContext) {
         try {
-            Log.d(TAG, "Starting import from : $sourceDirectory")
-            val elkFileManagerPackageName = "org.rff.digitres.elkfilemanager"
-            val intent = Intent("$elkFileManagerPackageName.IMPORT_ACTION")
-            val packageName = this.cordova.getActivity().getPackageName()
-            intent.putExtra("callingPackage", packageName.toString())
-            intent.putExtra("contentPath", sourceDirectory)
-            intent.setPackage(elkFileManagerPackageName)
-            this.cordova.getActivity().startActivity(intent);
-            callbackContext.success("ELK File Manager import activity successfully started ")
+            var sourceDirectory = folderPath
+
+            // Before starting teh ELK activity intent, check if ythe supplied path is valid folder and if it's not empty
+
+            val directory = File(folderPath)
+            if (directory.isDirectory) {
+                val contents: Array<File> = directory.listFiles() as Array<File>
+                if (contents.isEmpty()) {  // Folder is empty, try determining sdcrd root and forming a new path
+                    sourceDirectory = getCorrectSdCardFolder(folderPath)!!
+                }
+            } else {  // not valid, , try determining sdcrd root and forming a new path
+                sourceDirectory = getCorrectSdCardFolder(folderPath)!!
+            }
+
+            if (sourceDirectory != null) {
+                val elkFileManagerPackageName = "org.rff.digitres.elkfilemanager"
+                val intent = Intent("$elkFileManagerPackageName.IMPORT_ACTION")
+                val packageName = this.cordova.getActivity().getPackageName()
+                intent.putExtra("callingPackage", packageName.toString())
+                intent.putExtra("contentPath", sourceDirectory)
+                intent.setPackage(elkFileManagerPackageName)
+                this.cordova.getActivity().startActivity(intent);
+                callbackContext.success("ELK File Manager import started on: $sourceDirectory ")
+            } else {
+                callbackContext.error("Source folder provided is not valid: $folderPath")
+            }
+
         }catch (exc: Exception) {
-            callbackContext.success("Error encountered while starting ELK File Manager Import Activity")
+            callbackContext.error("Error encountered while starting ELK File Manager Import Activity")
         }
     }
 
@@ -201,19 +219,26 @@ public class ElkFilesShare: CordovaPlugin(){
         }
     }
 
-//    private fun getSDCardFolder(appFolder: String): File? {
-//        val context = this.cordova.activity.applicationContext
-//        val sdcard = context.getExternalFilesDirs(null )[1]
-//            .parentFile
-//            ?.parentFile
-//            ?.parentFile
-//            ?.parent
-//        val sdcardDocuments = File("${sdcard}/${appFolder}")
-//        return if (!sdcardDocuments.listFiles().isNullOrEmpty()) {
-//            sdcardDocuments
-//        } else null
-//    }
-//
+    private fun getCorrectSdCardFolder(path: String): String? {
+        val pathArray = path.split("/")
+        var subfolder = pathArray[pathArray.size - 1]
+        if (subfolder == null && pathArray.size > 2 ) {
+            subfolder = pathArray[pathArray.size - 2] // necessary in case sourceDirectory has a trailing /
+        }
+        val context = this.cordova.activity.applicationContext
+        val sdcard = context.getExternalFilesDirs(null )[1]
+            .parentFile
+            ?.parentFile
+            ?.parentFile
+            ?.parent
+        val sourceDirectory = "${sdcard}/${subfolder}"
+        Log.d(TAG, "RECREATED FOLDER = : $sourceDirectory")
+        val sdcardDocuments = File(sourceDirectory )
+        return if (!sdcardDocuments.listFiles().isNullOrEmpty()) {
+            sourceDirectory
+        } else null
+    }
+
 //    private fun getExternalCardDirectory(): String {
 //        val defaultValue = "N/A"
 //        val context = this.cordova.getActivity().applicationContext
