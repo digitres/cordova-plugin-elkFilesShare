@@ -15,7 +15,7 @@ import java.io.FileInputStream
 
 import android.content.Intent
 
-import android.app.ProgressDialog
+//import android.app.ProgressDialog
 import android.content.Context
 import android.os.Build
 import android.os.storage.StorageVolume
@@ -24,7 +24,8 @@ import android.os.storage.StorageVolume
 public class ElkFilesShare: CordovaPlugin(){
 
     private val TAG: String = "ElkFilesShare"
-    private lateinit var progressDialog: ProgressDialog
+   // private lateinit var progressDialog: ProgressDialog
+    //private var callbackContext : CallbackContext? = null
 
     override fun execute(
         action: String,
@@ -35,11 +36,17 @@ public class ElkFilesShare: CordovaPlugin(){
             Log.d(TAG, "running method: $action")
             when (action){
                 "importFile" -> {
-                    val sourceDirectoryString = args.getString(0)
-                    this.cordova.activity.runOnUiThread {
-                        run() {
-                            startImportActivity(sourceDirectoryString, callbackContext)
+                    val sdcardRoot = getExternalCardDirectory()
+                    if (sdcardRoot != null) {
+                        val sourceDirectoryString = args.getString(0)
+                        this.cordova.activity.runOnUiThread {
+                            run() {
+                                startImportActivity( "$sdcardRoot/${sourceDirectoryString.trim('/')}", callbackContext)
+                            }
                         }
+                    } else {
+                        Log.d(TAG, "SDCard is not available or not supported on this device.")
+                        callbackContext.error("SDCard is not available or not supported on this device.")
                     }
                     return true
                 }
@@ -88,45 +95,35 @@ public class ElkFilesShare: CordovaPlugin(){
         }
     }
 
-    private fun startImportActivity(folderPath: String, callbackContext: CallbackContext) {
+
+    private fun startImportActivity(sourceDirectory: String, callbackContext: CallbackContext) {
         try {
-            var sourceDirectory = folderPath
-
-            // Before starting teh ELK activity intent, check if ythe supplied path is valid folder and if it's not empty
-
-            val directory = File(folderPath)
-            if (directory.isDirectory) {
-                val contents: Array<File> = directory.listFiles() as Array<File>
-                if (contents.isEmpty()) {  // Folder is empty, try determining sdcrd root and forming a new path
-                    sourceDirectory = getCorrectSdCardFolder(folderPath)!!
-                }
-            } else {  // not valid, , try determining sdcrd root and forming a new path
-                sourceDirectory = getCorrectSdCardFolder(folderPath)!!
-            }
-
-            if (sourceDirectory != null) {
-                val elkFileManagerPackageName = "org.rff.digitres.elkfilemanager"
-                val intent = Intent("$elkFileManagerPackageName.IMPORT_ACTION")
-                val packageName = this.cordova.getActivity().getPackageName()
-                intent.putExtra("callingPackage", packageName.toString())
-                intent.putExtra("contentPath", sourceDirectory)
-                intent.setPackage(elkFileManagerPackageName)
-                this.cordova.getActivity().startActivity(intent);
-                callbackContext.success("ELK File Manager import started on: $sourceDirectory ")
-            } else {
-                callbackContext.error("Source folder provided is not valid: $folderPath")
-            }
+            val elkFileManagerPackageName = "org.rff.digitres.elkfilemanager"
+            val intent = Intent("$elkFileManagerPackageName.IMPORT_ACTION")
+            val packageName = this.cordova.activity.packageName
+            Log.d(TAG, "PACKAGE NAME: $packageName")
+            intent.putExtra("callingPackage", packageName.toString())
+            intent.putExtra("contentPath", sourceDirectory)
+            intent.setPackage(elkFileManagerPackageName)
+            this.cordova.activity.startActivity(intent);
+            callbackContext.success("ELK File Manager import started on: $sourceDirectory ")
 
         }catch (exc: Exception) {
+            Log.d(TAG, exc.message!!)
+            Log.d(TAG, exc.stackTraceToString())
             callbackContext.error("Error encountered while starting ELK File Manager Import Activity")
         }
     }
 
     private fun processFile(filesArray: JSONArray, targetDirectory: File, callbackContext: CallbackContext) {
         try {
+            var successCount: Int = 0
+            var failCount: Int = 0
+
             for (i in 0 until filesArray.length()) {
                 val fileJSONObj = filesArray.getJSONObject(i)
-                val sourceUri: Uri? = if (fileJSONObj.has("uri")) Uri.parse(fileJSONObj.getString("uri")) else null
+                val fileUriString = fileJSONObj.getString("uri")
+                val sourceUri: Uri? = if (fileJSONObj.has("uri")) Uri.parse(fileUriString) else null
                 if (sourceUri == null) {
                     callbackContext.error("Invalid URI passed")
                     return
@@ -147,16 +144,17 @@ public class ElkFilesShare: CordovaPlugin(){
                         unzip(file,targetDirectory)
                         file.delete()
                     }
-                    Log.d(TAG, "Finished copying files into: $targetDirectory")
-                    callbackContext.success("Files successfully saved")
+                    successCount = successCount + 1
+                    Log.d(TAG, "Finished copying file: $fileUriString")
                 } else {
-                    callbackContext.error("Error saving file")
+                    failCount = failCount + 1
+                    Log.d(TAG, "${fileUriString} is not a valid file and therfore cannot be copied")
                 }
-
             }
+            callbackContext.success("Finished coping files to app storage: $targetDirectory \n Files Copied: $successCount \n Fail count: $failCount")
         } catch (e: Exception) {
-            println("Error saving received file(s):: ${e.printStackTrace()}")
-            callbackContext.error("Error saving received file(s)")
+            Log.d(TAG, "Error saving received file(s):: ${e.printStackTrace()}")
+            callbackContext.error("Error encounter while saving received file(s) to $targetDirectory ")
         }
     }
 
@@ -189,87 +187,93 @@ public class ElkFilesShare: CordovaPlugin(){
         }
     }
 
-    private fun showLoadingDialog(message: String) {
+    private fun getExternalCardDirectory(): String? {
+        val defaultValue: String? = null
+        val context = this.cordova.getActivity().applicationContext
+        val storageManager = context.getSystemService(Context.STORAGE_SERVICE)
         try {
-
-            val runnable = Runnable {
-                if (progressDialog.isShowing) {
-                    progressDialog.dismiss()
-                }
-                val appContext = this.cordova.getActivity().applicationContext
-                progressDialog = ProgressDialog(appContext)
-                progressDialog.setTitle("Please wait...")
-                progressDialog.setMessage(message)
-                progressDialog.setCanceledOnTouchOutside(false)
-                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-                progressDialog.show()
+            val storageVolumeClassReflection = Class.forName("android.os.storage.StorageVolume")
+            val getVolumeList = storageManager.javaClass.getMethod("getVolumeList")
+            val getPath = if(Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
+                storageVolumeClassReflection.getMethod("getDirectory")
+            } else {
+                storageVolumeClassReflection.getMethod("getPath")
             }
-            cordova.activity.runOnUiThread(runnable)
+            val isRemovable = storageVolumeClassReflection.getMethod("isRemovable")
+            val result = getVolumeList.invoke(storageManager) as Array<StorageVolume>
+            result.forEach {
+                if (isRemovable.invoke(it) as Boolean) {
+                    return when(val invokeResult = getPath.invoke(it)) {
+                        is File -> invokeResult.absolutePath
 
-        } catch (e: Exception) {
-            println("dialog::error::${e.message}")
+                        is String -> invokeResult
+
+                        else -> defaultValue.also {
+                            Log.d(TAG,"Reflection unsupported type; Invoke result: $invokeResult" )
+                        }
+                    }
+                }
+            }
+        } catch (e: Throwable) {
+            Log.d(TAG,"Could not get SD card path; Exception: $e" )
         }
+        return defaultValue
     }
 
 
-    private fun closeLoadingDialog() {
-        println("closeLoadingDialog")
-        if (::progressDialog.isInitialized) {
-            progressDialog.dismiss()
-        }
-    }
-
-    private fun getCorrectSdCardFolder(path: String): String? {
-        val pathArray = path.split("/")
-        var subfolder = pathArray[pathArray.size - 1]
-        if (subfolder == null && pathArray.size > 2 ) {
-            subfolder = pathArray[pathArray.size - 2] // necessary in case sourceDirectory has a trailing /
-        }
-        val context = this.cordova.activity.applicationContext
-        val sdcard = context.getExternalFilesDirs(null )[1]
-            .parentFile
-            ?.parentFile
-            ?.parentFile
-            ?.parent
-        val sourceDirectory = "${sdcard}/${subfolder}"
-        Log.d(TAG, "RECREATED FOLDER = : $sourceDirectory")
-        val sdcardDocuments = File(sourceDirectory )
-        return if (!sdcardDocuments.listFiles().isNullOrEmpty()) {
-            sourceDirectory
-        } else null
-    }
-
-//    private fun getExternalCardDirectory(): String {
-//        val defaultValue = "N/A"
-//        val context = this.cordova.getActivity().applicationContext
-//        val storageManager = context.getSystemService(Context.STORAGE_SERVICE)
+//    private fun showLoadingDialog(message: String) {
 //        try {
-//            val storageVolumeClassReflection = Class.forName("android.os.storage.StorageVolume")
-//            val getVolumeList = storageManager.javaClass.getMethod("getVolumeList")
-//            val getPath = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-//                storageVolumeClassReflection.getMethod("getDirectory")
-//            } else {
-//                storageVolumeClassReflection.getMethod("getPath")
-//            }
-//            val isRemovable = storageVolumeClassReflection.getMethod("isRemovable")
-//            val result = getVolumeList.invoke(storageManager) as Array<StorageVolume>
-//            result.forEach {
-//                if (isRemovable.invoke(it) as Boolean) {
-//                    return when(val invokeResult = getPath.invoke(it)) {
-//                        is File -> invokeResult.absolutePath
 //
-//                        is String -> invokeResult
-//
-//                        else -> defaultValue.also {
-//                            Log.d(TAG,"Reflection unsupported type; Invoke result: $invokeResult" )
-//                        }
-//                    }
+//            val runnable = Runnable {
+//                if (progressDialog.isShowing) {
+//                    progressDialog.dismiss()
 //                }
+//                val appContext = this.cordova.getActivity().applicationContext
+//                progressDialog = ProgressDialog(appContext)
+//                progressDialog.setTitle("Please wait...")
+//                progressDialog.setMessage(message)
+//                progressDialog.setCanceledOnTouchOutside(false)
+//                progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+//                progressDialog.show()
 //            }
-//        } catch (e: Throwable) {
-//            Log.d(TAG,"Could not get SD card path; Exception: $e" )
+//            cordova.activity.runOnUiThread(runnable)
+//
+//        } catch (e: Exception) {
+//            println("dialog::error::${e.message}")
 //        }
-//        return defaultValue
+//    }
+
+
+//    private fun closeLoadingDialog() {
+//        println("closeLoadingDialog")
+//        if (::progressDialog.isInitialized) {
+//            progressDialog.dismiss()
+//        }
+//    }
+
+//    fun externalMemoryAvailable(): Boolean {
+//        return if (android.os.Environment.isExternalStorageRemovable()) {
+//            val state: String = android.os.Environment.getExternalStorageState()
+//            state == android.os.Environment.MEDIA_MOUNTED || state == android.os.Environment.MEDIA_MOUNTED_READ_ONLY
+//        } else {
+//            false
+//        }
+//    }
+
+//    private fun getSdCardFolder(path: String): String? {
+//        val subfolder: String? = path.trim('/')
+//        val context = this.cordova.activity.applicationContext
+//        val sdcard = context.getExternalFilesDirs(null )[1]
+//            .parentFile
+//            ?.parentFile
+//            ?.parentFile
+//            ?.parent
+//        val sourceDirectory = "${sdcard}/${subfolder}"
+//        Log.d(TAG, "RECREATED FOLDER = : $sourceDirectory")
+//        val sdcardDocuments = File(sourceDirectory )
+//        return if (!sdcardDocuments.listFiles().isNullOrEmpty()) {
+//            sourceDirectory
+//        } else null
 //    }
 
 //    @kotlin.jvm.Synchronized
