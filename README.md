@@ -5,7 +5,6 @@ Enables a cordova application to import/load files in a folder on the  SDCard vi
 <b> DEPENDENCIES</b>
 The plugin has the following dependencies.
 1. https://github.com/darryncampbell/darryncampbell-cordova-plugin-intent
-2. https://github.com/dpa99c/cordova-diagnostic-plugin
 3. https://github.com/dearzhengxy/cordova-plugin-progressdialog
 4. In addition to the above cordova plugins you need to have <a href="https://play.google.com/store/apps/details?id=org.rff.digitres.elkfilemanager"> ELK File Manager</a> installed and ran at least once to ensure user has given it all the permissions it requires.
 
