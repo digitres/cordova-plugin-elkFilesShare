@@ -25,7 +25,7 @@ public class ElkFilesShare: CordovaPlugin(){
 
     private val TAG: String = "ElkFilesShare"
    // private lateinit var progressDialog: ProgressDialog
-    //private var callbackContext : CallbackContext? = null
+    private var callbackContext : CallbackContext? = null
 
     override fun execute(
         action: String,
@@ -34,6 +34,7 @@ public class ElkFilesShare: CordovaPlugin(){
     ): Boolean {
         try {
             Log.d(TAG, "running method: $action")
+            this.callbackContext = callbackContext;
             when (action){
                 "importFile" -> {
                     val sdcardRoot = getExternalCardDirectory()
@@ -94,7 +95,36 @@ public class ElkFilesShare: CordovaPlugin(){
             callbackContext.error("Expected one non-empty string argument.")
         }
     }
-
+//
+//    private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+//        Log.d(TAG, "INSIDE FOR RESULT CALLBACK")
+//        if (result.resultCode == Activity.RESULT_OK) {
+//            val intent = result.data
+//            if (intent != null) {
+//                val targetDirectory = "/data/data/com.electricbookworks.rff.npt/files/";
+//                Log.d(TAG, intent)
+//                processFile(intent, targetDirectory,callbackContext)
+//            }
+//        }
+//    }
+//    private fun startImportActivityForResult(sourceDirectory: String, callbackContext: CallbackContext) {
+//        try {
+//            val elkFileManagerPackageName = "org.rff.digitres.elkfilemanager"
+//            val intent = Intent("$elkFileManagerPackageName.IMPORT_ACTION")
+//            val packageName = this.cordova.activity.packageName
+//            Log.d(TAG, "PACKAGE NAME: $packageName")
+//            intent.putExtra("callingPackage", packageName.toString())
+//            intent.putExtra("contentPath", sourceDirectory)
+//            intent.setPackage(elkFileManagerPackageName)
+//            this.cordova.activity.startForResult.launch(intent)
+//            //callbackContext.success("ELK File Manager import started on: $sourceDirectory ")
+//
+//        }catch (exc: Exception) {
+//            Log.d(TAG, exc.message!!)
+//            Log.d(TAG, exc.stackTraceToString())
+//            callbackContext.error("Error encountered while starting ELK File Manager Import Activity")
+//        }
+//    }
 
     private fun startImportActivity(sourceDirectory: String, callbackContext: CallbackContext) {
         try {
@@ -116,6 +146,7 @@ public class ElkFilesShare: CordovaPlugin(){
     }
 
     private fun processFile(filesArray: JSONArray, targetDirectory: File, callbackContext: CallbackContext) {
+        Log.d(TAG, "Received files: ${filesArray.length()}")
         try {
             var successCount: Int = 0
             var failCount: Int = 0
