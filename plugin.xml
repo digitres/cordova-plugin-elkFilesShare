@@ -34,11 +34,16 @@
             </intent-filter>
         </config-file>
         <config-file target="AndroidManifest.xml" parent="/*" mode="merge">
-            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-                             tools:ignore="ScopedStorage" />
             <uses-permission android:name="android.permission.REORDER_TASKS" />
             <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+        </config-file>
+        <config-file target="AndroidManifest.xml" parent="/manifest/queries" mode="merge">
+            <package android:name="org.rff.saide.knowhow" />
+            <package android:name="com.electricbookworks.rff.npt" />
+            <package android:name="org.rff.digitres.elkfilemanager" />
+            <package android:name="org.rff.digitres.elklauncher" />
+            <package android:name="priv.rff.thereachtrust.dataguard" />
+            <package android:name="org.thereachtrust.federer" />
         </config-file>
         <source-file src="src/android/com/digitres/cordova/plugin/ElkFilesShare.kt" target-dir="app/src/main/kotlin/com/digitres/cordova/plugin/" />
 

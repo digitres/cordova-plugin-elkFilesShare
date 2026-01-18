@@ -68,6 +68,16 @@ public class ElkFilesShare: CordovaPlugin(){
                     }
                     return true
                 }
+                "isAppInstalled" -> {
+                    val packageName = args.getString(0)
+                    Log.d(TAG, "Package name: $packageName")
+                    cordova.threadPool.execute {
+                        run() {
+                            isAppInstalled(callbackContext, packageName)
+                        }
+                    }
+                    return true
+                }
                 "echo" -> {
                     val message = args.getString(0)
                     echo("Backend echo: $message ", callbackContext)
@@ -95,36 +105,22 @@ public class ElkFilesShare: CordovaPlugin(){
             callbackContext.error("Expected one non-empty string argument.")
         }
     }
-//
-//    private val startForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-//        Log.d(TAG, "INSIDE FOR RESULT CALLBACK")
-//        if (result.resultCode == Activity.RESULT_OK) {
-//            val intent = result.data
-//            if (intent != null) {
-//                val targetDirectory = "/data/data/com.electricbookworks.rff.npt/files/";
-//                Log.d(TAG, intent)
-//                processFile(intent, targetDirectory,callbackContext)
-//            }
-//        }
-//    }
-//    private fun startImportActivityForResult(sourceDirectory: String, callbackContext: CallbackContext) {
-//        try {
-//            val elkFileManagerPackageName = "org.rff.digitres.elkfilemanager"
-//            val intent = Intent("$elkFileManagerPackageName.IMPORT_ACTION")
-//            val packageName = this.cordova.activity.packageName
-//            Log.d(TAG, "PACKAGE NAME: $packageName")
-//            intent.putExtra("callingPackage", packageName.toString())
-//            intent.putExtra("contentPath", sourceDirectory)
-//            intent.setPackage(elkFileManagerPackageName)
-//            this.cordova.activity.startForResult.launch(intent)
-//            //callbackContext.success("ELK File Manager import started on: $sourceDirectory ")
-//
-//        }catch (exc: Exception) {
-//            Log.d(TAG, exc.message!!)
-//            Log.d(TAG, exc.stackTraceToString())
-//            callbackContext.error("Error encountered while starting ELK File Manager Import Activity")
-//        }
-//    }
+
+    fun isAppInstalled( callbackContext: CallbackContext, packageName: String): Boolean {
+        return try {
+            val pm = callbackContext.packageManager
+            // For Android 13 (API 33) and above, use ApplicationInfoFlags
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                pm.getApplicationInfo(packageName, PackageManager.ApplicationInfoFlags.of(0))
+            } else {
+                @Suppress("DEPRECATION")
+                pm.getApplicationInfo(packageName, 0)
+            }
+            callbackContext.success(true)
+        } catch (e: PackageManager.NameNotFoundException) {
+            callbackContext.error(false)
+        }
+    }
 
     private fun startImportActivity(sourceDirectory: String, callbackContext: CallbackContext) {
         try {
