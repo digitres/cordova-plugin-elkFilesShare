@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        id="cordova-plugin-elk-files-share" version="1.0.0">
+        id="cordova-plugin-elk-files-share" version="1.0.0" xmlns:tools="">
 
     <name>ElkFilesShare</name>
     <description>Allows ELK codorva apps to receive files from other android apps.</description>
@@ -26,18 +26,20 @@
             </feature>
         </config-file>
 
-        <!--        <config-file target="AndroidManifest.xml" platform="android" parent="/manifest/application/activity" mode="merge">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.SEND" />-->
-<!--                <category android:name="android.intent.category.DEFAULT" />-->
-<!--                <data android:mimeType="*/*" />-->
-<!--            </intent-filter>-->
-<!--        </config-file>-->
-<!--        <config-file target="AndroidManifest.xml" parent="/*" mode="merge">-->
-<!--            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />-->
-<!--            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />-->
-<!--            <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>-->
-<!--        </config-file>-->
+       <config-file target="AndroidManifest.xml" platform="android" parent="/manifest/application/activity" mode="merge">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="*/*" />
+            </intent-filter>
+        </config-file>
+        <config-file target="AndroidManifest.xml" parent="/*" mode="merge">
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+            <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+                             tools:ignore="ScopedStorage" />
+            <uses-permission android:name="android.permission.REORDER_TASKS" />
+            <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+        </config-file>
         <source-file src="src/android/com/digitres/cordova/plugin/ElkFilesShare.kt" target-dir="app/src/main/kotlin/com/digitres/cordova/plugin/" />
 
     </platform>
