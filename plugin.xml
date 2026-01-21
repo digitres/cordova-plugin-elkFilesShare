@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android"
-        id="cordova-plugin-elk-files-share" version="1.0.0">
+        id="cordova-plugin-elk-files-share" version="1.0.1">
 
     <name>ElkFilesShare</name>
     <description>Allows ELK codorva apps to receive files from other android apps.</description>
