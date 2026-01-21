@@ -1,9 +1,36 @@
 var exec = require('cordova/exec');
 
 /**
- * ELK Files SHare .
+ * ELK Files Share.
  */
 var elkFilesShare = {
+    /**
+     * Opens the system's file picker to allow the user to select a directory.
+     * The selected directory's URI is returned in the success callback.
+     * This is the preferred method for getting access to SD Card or USB drive roots.
+     * @param {function} success Callback function for success, receives the directory URI.
+     * @param {function} error Callback function for error.
+     */
+    selectDirectory: function (success, error) {
+        cordova.exec(
+            success,
+            error,
+            'ElkFilesShare',
+            'selectDirectory',
+            []
+        );
+    },
+
+    importFolderFiles: function (params, success, error) {
+        cordova.exec(
+            success,
+            error,
+            'ElkFilesShare',
+            'importFolderFiles',
+            params
+        );
+    },
+
     importFile: function (params, success, error) {
         cordova.exec(
             success,
@@ -13,12 +40,23 @@ var elkFilesShare = {
             params
         );
     },
+
     processFile: function (params, success, error) {
         cordova.exec(
             success,
             error,
             'ElkFilesShare',
             'processFile',
+            params
+        );
+    },
+
+    checkAppInstallStatus: function (params, success, error) {
+        cordova.exec(
+            success,
+            error,
+            'ElkFilesShare',
+            'checkAppInstallStatus',
             params
         );
     },
@@ -32,16 +70,6 @@ var elkFilesShare = {
             [message]
         );
      }
+};
 
-//   alert: function (success, error) {
-//        cordova.exec(
-//            success,
-//            error,
-//            'ElkFilesShare',
-//            'alert',
-//            []
-//        );
-//   }
-
-}
 module.exports = elkFilesShare;
