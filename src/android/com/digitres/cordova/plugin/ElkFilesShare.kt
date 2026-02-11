@@ -195,6 +195,18 @@ public class ElkFilesShare: CordovaPlugin(){
             val context = this.cordova.activity.applicationContext
             val contentResolver = context.contentResolver
             val sourceUri = Uri.parse(sourceDirectoryUriString)
+
+            // chec for permissions on teh provided Uri
+            val persistedPermissions = contentResolver.persistedUriPermissions
+            val hasPermission = persistedPermissions.any { it.uri == sourceUri && it.isReadPermission }
+            if (!hasPermission) {
+                val permissionError = "Permission for URI '$sourceUri' has been lost. Please have the user select the directory again."
+                Log.e(TAG, permissionError)
+                callbackContext.error(permissionError)
+                return
+            } // .. done checking permissions
+
+
             if (sourceUri.path?.startsWith("/tree/") != true) {
                 val errorMessage = "Invalid URI provided. Expected a directory (tree) URI from the Storage Access Framework, but received a document URI instead: $sourceDirectoryUriString"
                 Log.e(TAG, errorMessage)
@@ -207,7 +219,8 @@ public class ElkFilesShare: CordovaPlugin(){
             }
 
             val treeDocId = DocumentsContract.getTreeDocumentId(sourceUri)
-            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(sourceUri, treeDocId)
+            val selectedDirUri: Uri = DocumentsContract.buildDocumentUriUsingTree(sourceUri, treeDocId)
+            val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(selectedDirUri, treeDocId)
             val cursor = contentResolver.query(childrenUri, arrayOf(DocumentsContract.Document.COLUMN_DOCUMENT_ID, OpenableColumns.DISPLAY_NAME), null, null, null)
 
             if (cursor == null) {
@@ -220,11 +233,19 @@ public class ElkFilesShare: CordovaPlugin(){
 
             cursor.use {
                 while (it.moveToNext()) {
-                    val docId = it.getString(0)
+                    var docId = it.getString(0)
                     val fileName = it.getString(1)
+                    Log.e(TAG, "DocID: ${docId}")
+                    Log.e(TAG, "FileName: ${fileName}")
                     try {
-                        val fileUri = DocumentsContract.buildDocumentUriUsingTree(sourceUri, docId)
+//                        if (docId.contains(":") && (docId.contains("/") || docId.contains("\\"))) {
+//                            Log.w(TAG, "Correcting a malformed docId: $docId")
+//                            docId = docId.split(":")[1]
+//                            Log.e(TAG, "Corrected DocID: ${docId}")
+//                        }
 
+                        val fileUri = DocumentsContract.buildDocumentUriUsingTree(selectedDirUri, docId)
+                        Log.e(TAG, "FileURI: ${fileUri}")
                         val targetFile = File(targetDirectory, fileName)
 
                         // Copy the file from the source URI to the target file path
@@ -248,6 +269,7 @@ public class ElkFilesShare: CordovaPlugin(){
                         Log.e(TAG, "Failed to import a file: ${e.message}")
                         val stackTraceString = e.stackTraceToString()
                         callbackContext.error("ERROR DURING IMPORT \n${e.message} \n $stackTraceString \n sourceDirectoryUriString: $sourceDirectoryUriString \n targetDirectoryPath:$targetDirectoryPath \nfileName:$fileName")
+                        return // Stop execution
                     }
                 }
             }
