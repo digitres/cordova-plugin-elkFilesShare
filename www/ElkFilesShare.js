@@ -11,6 +11,16 @@ var elkFilesShare = {
      * @param {function} success Callback function for success, receives the directory URI.
      * @param {function} error Callback function for error.
      */
+
+     selectFile: function (success, error) {
+         cordova.exec(
+             success,
+             error,
+             'ElkFilesShare',
+             'selectFile',
+             []
+         );
+     },
     selectDirectory: function (success, error) {
         cordova.exec(
             success,
@@ -20,17 +30,6 @@ var elkFilesShare = {
             []
         );
     },
-
-    importFolderFiles: function (params, success, error) {
-        cordova.exec(
-            success,
-            error,
-            'ElkFilesShare',
-            'importFolderFiles',
-            params
-        );
-    },
-
     importFile: function (params, success, error) {
         cordova.exec(
             success,
@@ -40,13 +39,12 @@ var elkFilesShare = {
             params
         );
     },
-
-    processFile: function (params, success, error) {
+    importDirectory: function (params, success, error) {
         cordova.exec(
             success,
             error,
             'ElkFilesShare',
-            'processFile',
+            'importDirectory',
             params
         );
     },
